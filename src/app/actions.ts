@@ -2,13 +2,10 @@
 
 import { z } from "zod";
 import { cookies } from "next/headers";
-import { sendOtp as sendOtpFlow } from "@/ai/flows/otp-flow";
-import { verifyOtp as verifyOtpFlow } from "@/ai/flows/verify-otp-flow";
 import { OTPSchema, PhoneSchema } from "@/lib/schemas";
 
 
-// This function simulates calling an API to send an OTP.
-// In a real application, this would involve an HTTP request to your backend.
+// This function calls the API to send an OTP.
 export async function sendOtp(
   values: z.infer<typeof PhoneSchema>
 ): Promise<{ success: boolean; message: string }> {
@@ -18,10 +15,30 @@ export async function sendOtp(
     return { success: false, message: "Invalid phone number format." };
   }
 
-  return await sendOtpFlow(validatedFields.data);
+  try {
+      const response = await fetch("https://flashback.inc:9000/api/mobile/sendOTP", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber: validatedFields.data.phoneNumber }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("API error:", result.message);
+        return { success: false, message: result.message || "Failed to send OTP." };
+      }
+
+      return { success: true, message: "OTP has been sent to your WhatsApp." };
+    } catch (error) {
+      console.error("Network or other error:", error);
+      return { success: false, message: "An error occurred. Please try again later." };
+    }
 }
 
-// This function simulates verifying the OTP.
+// This function calls the API to verify the OTP.
 export async function verifyOtp(
   values: z.infer<typeof OTPSchema>
 ): Promise<{ success: boolean; message: string; token?: string }> {
@@ -31,22 +48,42 @@ export async function verifyOtp(
     return { success: false, message: "Invalid OTP format." };
   }
 
-  const result = await verifyOtpFlow({
-      ...validatedFields.data,
-      login_platform: "MobileApp"
-  });
+  const payload = {
+    ...validatedFields.data,
+    login_platform: "MobileApp"
+  };
 
-  if (result.success && result.token) {
-    // Securely store the JWT in an HTTP-only cookie
-    cookies().set("auth_token", result.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    });
-  }
+  try {
+      const response = await fetch("https://flashback.inc:9000/api/mobile/verifyOTP", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-  return result;
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("API error:", result.message);
+        return { success: false, message: result.message || "Invalid or expired OTP." };
+      }
+      
+      if (result.success && result.token) {
+        // Securely store the JWT in an HTTP-only cookie
+        cookies().set("auth_token", result.token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+        });
+      }
+
+      return { success: true, message: "OTP verified successfully!", token: result.token };
+    } catch (error) {
+      console.error("Network or other error:", error);
+      return { success: false, message: "An error occurred. Please try again later." };
+    }
 }
 
 

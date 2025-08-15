@@ -15,30 +15,3 @@ export const OTPSchema = z.object({
     .regex(/^\d{6}$/, "OTP must contain only digits."),
   phoneNumber: z.string(),
 });
-
-
-export const SendOtpInputSchema = z.object({
-  phoneNumber: z.string().describe('The phone number to send the OTP to.'),
-});
-export type SendOtpInput = z.infer<typeof SendOtpInputSchema>;
-
-export const SendOtpOutputSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-});
-export type SendOtpOutput = z.infer<typeof SendOtpOutputSchema>;
-
-
-export const VerifyOtpInputSchema = z.object({
-  otp: z.string().describe('The one-time password to verify.'),
-  phoneNumber: z.string().describe('The phone number the OTP was sent to.'),
-  login_platform: z.string().describe("The platform the user is logging in from."),
-});
-export type VerifyOtpInput = z.infer<typeof VerifyOtpInputSchema>;
-
-export const VerifyOtpOutputSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  token: z.string().optional(),
-});
-export type VerifyOtpOutput = z.infer<typeof VerifyOtpOutputSchema>;
