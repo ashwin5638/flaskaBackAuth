@@ -15,7 +15,7 @@ export default function AuthContainer({ title, children }: AuthContainerProps) {
             <div className="bg-primary/10 p-3 rounded-full">
                 <Camera className="h-8 w-8 text-primary"/>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">SelfieAuth</h1>
+            <h1 className="text-2xl font-bold text-foreground">Authentication</h1>
         </div>
         <CardTitle className="text-center pt-4 text-xl font-medium">{title}</CardTitle>
       </CardHeader>
