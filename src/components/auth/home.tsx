@@ -2,14 +2,16 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCircle, Phone } from "lucide-react";
+import { CheckCircle, Phone, LogOut } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface HomeProps {
   phoneNumber: string;
   selfieImage: string;
+  onLogout: () => void;
 }
 
-export default function Home({ phoneNumber, selfieImage }: HomeProps) {
+export default function Home({ phoneNumber, selfieImage, onLogout }: HomeProps) {
   return (
     <div className="flex flex-col items-center text-center space-y-6 p-4">
         <CheckCircle className="h-16 w-16 text-green-500"/>
@@ -18,7 +20,7 @@ export default function Home({ phoneNumber, selfieImage }: HomeProps) {
             <p className="text-muted-foreground">You have successfully logged in.</p>
         </div>
       
-        <div className="flex items-center space-x-4 bg-muted p-4 rounded-lg">
+        <div className="flex items-center space-x-4 bg-muted p-4 rounded-lg w-full">
             <Avatar className="h-20 w-20 border-4 border-primary">
                 <AvatarImage src={selfieImage} alt="User selfie" />
                 <AvatarFallback>YOU</AvatarFallback>
@@ -31,6 +33,10 @@ export default function Home({ phoneNumber, selfieImage }: HomeProps) {
                 </div>
             </div>
         </div>
+        <Button onClick={onLogout} variant="outline">
+            <LogOut className="mr-2"/>
+            Logout
+        </Button>
     </div>
   );
 }

@@ -28,7 +28,11 @@ const verifyOtpFlow = ai.defineFlow(
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ phoneNumber: input.phoneNumber, otp: input.otp }),
+        body: JSON.stringify({ 
+            phoneNumber: input.phoneNumber, 
+            otp: input.otp,
+            login_platform: input.login_platform,
+        }),
       });
 
       const result = await response.json();

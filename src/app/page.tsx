@@ -28,6 +28,14 @@ export default function SelfieAuthPage() {
     setSelfie(imageData);
     setStep("home");
   };
+  
+  const handleLogout = () => {
+    // This is a client-side action to reset the state.
+    // A full-fledged logout would also involve clearing the cookie on the server.
+    setStep("phone");
+    setPhoneNumber("");
+    setSelfie("");
+  }
 
   const renderStep = () => {
     switch (step) {
@@ -38,7 +46,7 @@ export default function SelfieAuthPage() {
       case "liveness":
         return <LivenessCheck onSuccess={handleLivenessSuccess} phoneNumber={phoneNumber} />;
       case "home":
-        return <Home phoneNumber={phoneNumber} selfieImage={selfie} />;
+        return <Home phoneNumber={phoneNumber} selfieImage={selfie} onLogout={handleLogout} />;
       default:
         return <PhoneForm onSuccess={handlePhoneSuccess} />;
     }

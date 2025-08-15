@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { cookies } from "next/headers";
 import { sendOtp as sendOtpFlow } from "@/ai/flows/otp-flow";
 import { verifyOtp as verifyOtpFlow } from "@/ai/flows/verify-otp-flow";
 import { OTPSchema, PhoneSchema } from "@/lib/schemas";
@@ -30,7 +31,22 @@ export async function verifyOtp(
     return { success: false, message: "Invalid OTP format." };
   }
 
-  return await verifyOtpFlow(validatedFields.data);
+  const result = await verifyOtpFlow({
+      ...validatedFields.data,
+      login_platform: "MobileApp"
+  });
+
+  if (result.success && result.token) {
+    // Securely store the JWT in an HTTP-only cookie
+    cookies().set("auth_token", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+  }
+
+  return result;
 }
 
 
@@ -45,20 +61,28 @@ export async function uploadSelfie(
   if (!image || !username) {
     return { success: false, message: "Missing image or username." };
   }
+
+  const token = cookies().get("auth_token")?.value;
+
+  if (!token) {
+    return { success: false, message: "Authentication token not found. Please log in again." };
+  }
   
   try {
+    // Convert data URI to Blob
+    const fetchResponse = await fetch(image);
+    const blob = await fetchResponse.blob();
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('image', blob, 'selfie.png');
+    uploadFormData.append('username', username);
+
     const response = await fetch("https://flashback.inc:9000/api/mobile/uploadUserPortrait", {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({
-          // The username here is the phone number from the previous steps
-          username: username, 
-          // The image is a Base64 encoded Data URI. We might need to trim the header.
-          // e.g. "data:image/png;base64,iVBORw0KGgo..." -> "iVBORw0KGgo..."
-          imageBase64: image.split(',')[1] 
-      }),
+      body: uploadFormData,
     });
 
     const result = await response.json();
