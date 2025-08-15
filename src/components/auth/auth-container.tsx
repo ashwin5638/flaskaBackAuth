@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Selfie } from "lucide-react";
+import { Camera } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface AuthContainerProps {
@@ -13,7 +13,7 @@ export default function AuthContainer({ title, children }: AuthContainerProps) {
       <CardHeader>
         <div className="flex flex-col items-center text-center space-y-2">
             <div className="bg-primary/10 p-3 rounded-full">
-                <Selfie className="h-8 w-8 text-primary"/>
+                <Camera className="h-8 w-8 text-primary"/>
             </div>
             <h1 className="text-2xl font-bold text-foreground">SelfieAuth</h1>
         </div>
