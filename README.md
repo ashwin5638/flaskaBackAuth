@@ -8,7 +8,7 @@ This  application demonstrates a complete user authentication flow using a mobil
 -   **OTP Verification**: A One-Time Password is sent to the user's WhatsApp for verification.
 -   **Liveness Check**: An interactive, on-device check to ensure the user is a real, live person before capturing a selfie.
 -   **Secure Selfie Upload**: The captured selfie is securely uploaded to a backend service.
--   **Modern Tech Stack**: Built with Next.js, React, TypeScript, Tailwind CSS, and Genkit for server-side logic.
+-   **Modern Tech Stack**: Built with React, TypeScript, Tailwind CSS, and Genkit for server-side logic.
 -   **Component-Based UI**: Styled with ShadCN UI components for a polished and consistent look and feel.
 
 ## How It Works
@@ -49,7 +49,7 @@ To start the application in development mode, run the following command:
 npm run dev
 ```
 
-This will start the Next.js development server, typically on [http://localhost:9002](http://localhost:9002).
+This will start  development server, typically on [http://localhost:9002](http://localhost:9002).
 
 ## Project Structure
 
@@ -65,4 +65,4 @@ This will start the Next.js development server, typically on [http://localhost:9
 -   `src/lib/`: Utility functions and schema definitions.
     -   `schemas.ts`: Zod schemas for form validation and data typing.
 -   `public/`: Static assets.
--   `next.config.ts`: Next.js configuration.
+-   `config.ts`:  configuration.
