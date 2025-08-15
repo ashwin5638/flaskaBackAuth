@@ -66,3 +66,7 @@ This will start  development server, typically on [http://localhost:9002](http:/
     -   `schemas.ts`: Zod schemas for form validation and data typing.
 -   `public/`: Static assets.
 -   `config.ts`:  configuration.
+
+
+https://github.com/user-attachments/assets/027a47ed-94f5-4e02-9bb3-e88e853b4f50
+
