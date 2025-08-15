@@ -158,7 +158,7 @@ export default function LivenessCheck({ onSuccess, phoneNumber }: LivenessCheckP
             <div className="text-center">
                 <p className="font-semibold text-lg mb-4">Confirm Your Selfie</p>
                 <img src={capturedImage!} alt="Captured selfie" className="rounded-full w-48 h-48 mx-auto border-4 border-primary shadow-lg object-cover" />
-                <div className="flex gap-4 mt-6 justify-center">
+                <div className="flex gap-4 mt-6 justify-center backgroundColor : red">
                     <Button onClick={startCamera} variant="outline" disabled={isUploading}>Retake</Button>
                     <Button onClick={handleUpload} disabled={isUploading} variant="default">
                         {isUploading ? "Uploading..." : "Looks Good, Upload"}
