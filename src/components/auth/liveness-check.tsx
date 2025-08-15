@@ -8,6 +8,7 @@ import { uploadSelfie } from '@/app/actions';
 
 interface LivenessCheckProps {
   onSuccess: (imageData: string) => void;
+  phoneNumber: string;
 }
 
 const livenessSteps = [
@@ -17,7 +18,7 @@ const livenessSteps = [
   'Turn your head to the right',
 ];
 
-export default function LivenessCheck({ onSuccess }: LivenessCheckProps) {
+export default function LivenessCheck({ onSuccess, phoneNumber }: LivenessCheckProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState<'idle' | 'initializing' | 'streaming' | 'checking' | 'success' | 'captured' | 'error'>('idle');
@@ -95,9 +96,8 @@ export default function LivenessCheck({ onSuccess }: LivenessCheckProps) {
 
     startUploading(async () => {
         const formData = new FormData();
-        // The server action will get a base64 string, this is fine for mock
         formData.append('image', capturedImage);
-        formData.append('username', "user"); // In a real app, you would pass the phone number here
+        formData.append('username', phoneNumber);
 
         const result = await uploadSelfie(formData);
         

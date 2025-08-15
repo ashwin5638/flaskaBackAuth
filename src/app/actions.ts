@@ -34,26 +34,44 @@ export async function verifyOtp(
 }
 
 
-// This function simulates uploading the captured selfie.
+// This function uploads the captured selfie.
 export async function uploadSelfie(
   formData: FormData
 ): Promise<{ success: boolean; message: string; imageUrl?: string }> {
 
-  const image = formData.get("image");
-  const username = formData.get("username");
+  const image = formData.get("image") as string;
+  const username = formData.get("username") as string;
   
   if (!image || !username) {
     return { success: false, message: "Missing image or username." };
   }
+  
+  try {
+    const response = await fetch("https://flashback.inc:9000/api/mobile/uploadUserPortrait", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+          // The username here is the phone number from the previous steps
+          username: username, 
+          // The image is a Base64 encoded Data URI. We might need to trim the header.
+          // e.g. "data:image/png;base64,iVBORw0KGgo..." -> "iVBORw0KGgo..."
+          imageBase64: image.split(',')[1] 
+      }),
+    });
 
-  console.log(`Simulating uploading selfie for ${username}...`);
+    const result = await response.json();
 
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
+    if (!response.ok) {
+      console.error("API error:", result.message);
+      return { success: false, message: result.message || "Failed to upload selfie." };
+    }
 
-  console.log("Simulation: Selfie uploaded successfully.");
-  // In a real app, the backend would store the image and return a URL.
-  // Here we just pass the data URI back for display.
-  const imageUrl = image.toString();
-  return { success: true, message: "Selfie uploaded successfully!", imageUrl };
+    // The API might not return a URL, we will use the captured image for display
+    return { success: true, message: "Selfie uploaded successfully!", imageUrl: image };
+  } catch(error) {
+    console.error("Network or other error:", error);
+    return { success: false, message: "An error occurred during selfie upload." };
+  }
 }

@@ -26,6 +26,7 @@ export default function OtpForm({ onSuccess, phoneNumber }: OtpFormProps) {
     resolver: zodResolver(OTPSchema),
     defaultValues: {
       otp: "",
+      phoneNumber: phoneNumber,
     },
   });
 
@@ -52,7 +53,7 @@ export default function OtpForm({ onSuccess, phoneNumber }: OtpFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <p className="text-center text-muted-foreground text-sm">
-            Enter the 6-digit code sent to {phoneNumber}. For this demo, the OTP is 123456.
+            Enter the 6-digit code sent to {phoneNumber}.
         </p>
         <FormField
           control={form.control}

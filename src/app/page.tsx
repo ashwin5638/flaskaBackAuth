@@ -36,7 +36,7 @@ export default function SelfieAuthPage() {
       case "otp":
         return <OtpForm onSuccess={handleOtpSuccess} phoneNumber={phoneNumber} />;
       case "liveness":
-        return <LivenessCheck onSuccess={handleLivenessSuccess} />;
+        return <LivenessCheck onSuccess={handleLivenessSuccess} phoneNumber={phoneNumber} />;
       case "home":
         return <Home phoneNumber={phoneNumber} selfieImage={selfie} />;
       default:

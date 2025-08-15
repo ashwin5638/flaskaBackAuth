@@ -22,22 +22,26 @@ const verifyOtpFlow = ai.defineFlow(
     outputSchema: VerifyOtpOutputSchema,
   },
   async (input) => {
-    console.log(`Simulating verifying OTP: ${input.otp}...`);
+    try {
+      const response = await fetch("https://flashback.inc:9000/api/mobile/verifyOTP", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber: input.phoneNumber, otp: input.otp }),
+      });
 
-    // In a real app, you'd check the OTP against a value stored in your database
-    // that you associated with the user's session.
-    
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await response.json();
 
-    if (input.otp !== "123456") {
-        console.error("Simulation: Invalid OTP entered.");
-        return { success: false, message: "Invalid or expired OTP. Please try again." };
+      if (!response.ok) {
+        console.error("API error:", result.message);
+        return { success: false, message: result.message || "Invalid or expired OTP." };
+      }
+
+      return { success: true, message: "OTP verified successfully!", token: result.token };
+    } catch (error) {
+      console.error("Network or other error:", error);
+      return { success: false, message: "An error occurred. Please try again later." };
     }
-
-    console.log("Simulation: OTP verified successfully.");
-    // In a real app, the backend would return a JWT.
-    const mockJwt = "_mock_jwt_token_" + Math.random();
-    return { success: true, message: "OTP verified successfully!", token: mockJwt };
   }
 );

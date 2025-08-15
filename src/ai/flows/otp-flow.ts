@@ -22,26 +22,26 @@ const sendOtpFlow = ai.defineFlow(
     outputSchema: SendOtpOutputSchema,
   },
   async (input) => {
-    console.log(`Simulating sending OTP to ${input.phoneNumber}...`);
+    try {
+      const response = await fetch("https://flashback.inc:9000/api/mobile/sendOTP", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber: input.phoneNumber }),
+      });
 
-    // In a real application, you would integrate with an OTP service like Twilio here.
-    // For example:
-    // const result = await twilio.messages.create({
-    //   body: `Your OTP is ${generatedOtp}`,
-    //   from: 'your_twilio_number',
-    //   to: input.phoneNumber
-    // });
-    
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await response.json();
 
-    // Simulate a potential API error for demonstration
-    if (input.phoneNumber.includes("5555")) {
-        console.error("Simulation: API error for rate-limited number.");
-        return { success: false, message: "This phone number has been rate-limited. Please try again later." };
+      if (!response.ok) {
+        console.error("API error:", result.message);
+        return { success: false, message: result.message || "Failed to send OTP." };
+      }
+
+      return { success: true, message: "OTP has been sent to your WhatsApp." };
+    } catch (error) {
+      console.error("Network or other error:", error);
+      return { success: false, message: "An error occurred. Please try again later." };
     }
-
-    console.log("Simulation: OTP sent successfully.");
-    return { success: true, message: "OTP has been sent to your WhatsApp." };
   }
 );

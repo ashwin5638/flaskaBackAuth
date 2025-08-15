@@ -13,6 +13,7 @@ export const OTPSchema = z.object({
     .min(6, "OTP must be 6 digits.")
     .max(6, "OTP must be 6 digits.")
     .regex(/^\d{6}$/, "OTP must contain only digits."),
+  phoneNumber: z.string(),
 });
 
 
@@ -30,6 +31,7 @@ export type SendOtpOutput = z.infer<typeof SendOtpOutputSchema>;
 
 export const VerifyOtpInputSchema = z.object({
   otp: z.string().describe('The one-time password to verify.'),
+  phoneNumber: z.string().describe('The phone number the OTP was sent to.'),
 });
 export type VerifyOtpInput = z.infer<typeof VerifyOtpInputSchema>;
 
