@@ -69,17 +69,21 @@ export async function verifyOtp(
         return { success: false, message: result.message || "Invalid or expired OTP." };
       }
       
-      if (result.success && result.token) {
-        // Securely store the JWT in an HTTP-only cookie
-        cookies().set("auth_token", result.token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          path: "/",
-        });
+      if (result.success) {
+        // Securely store the JWT in an HTTP-only cookie if it exists
+        if(result.token) {
+            cookies().set("auth_token", result.token, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "strict",
+              path: "/",
+            });
+        }
+         return { success: true, message: "OTP verified successfully!", token: result.token };
       }
 
-      return { success: true, message: "OTP verified successfully!", token: result.token };
+      // If the API call was ok but verification failed (e.g. wrong OTP)
+      return { success: false, message: result.message || "Invalid or expired OTP." };
     } catch (error) {
       console.error("Network or other error:", error);
       return { success: false, message: "An error occurred. Please try again later." };
@@ -89,17 +93,15 @@ export async function verifyOtp(
 
 // This function uploads the captured selfie.
 export async function uploadSelfie(
-  formData: FormData
+  formData: FormData,
+  token?: string
 ): Promise<{ success: boolean; message: string; imageUrl?: string }> {
-
   const image = formData.get("image") as string;
   const username = formData.get("username") as string;
-  
+
   if (!image || !username) {
     return { success: false, message: "Missing image or username." };
   }
-
-  const token = cookies().get("auth_token")?.value;
 
   if (!token) {
     return { success: false, message: "Authentication token not found. Please log in again." };
@@ -114,11 +116,12 @@ export async function uploadSelfie(
     uploadFormData.append('image', blob, 'selfie.png');
     uploadFormData.append('username', username);
 
+    const headers = new Headers();
+    headers.append('Authorization', `Bearer ${token}`);
+
     const response = await fetch("https://flashback.inc:9000/api/mobile/uploadUserPortrait", {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: headers,
       body: uploadFormData,
     });
 
