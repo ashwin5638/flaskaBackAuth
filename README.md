@@ -1,6 +1,6 @@
-# SelfieAuth: A Next.js Liveness & Authentication App
+# SelfieAuth:  Authentication App
 
-This is a Next.js application that demonstrates a complete user authentication flow using a mobile number, OTP verification via WhatsApp, and an on-device liveness check with a selfie upload.
+This  application demonstrates a complete user authentication flow using a mobile number, OTP verification via WhatsApp, and an on-device liveness check with a selfie upload.
 
 ## Features
 
