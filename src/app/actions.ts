@@ -91,51 +91,133 @@ export async function verifyOtp(
 }
 
 
-// This function uploads the captured selfie.
+
+
+
+
 export async function uploadSelfie(
   formData: FormData,
-  token?: string
-): Promise<{ success: boolean; message: string; imageUrl?: string }> {
-  const image = formData.get("image") as string;
-  const username = formData.get("username") as string;
-
-  if (!image || !username) {
-    return { success: false, message: "Missing image or username." };
-  }
-
-  if (!token) {
-    return { success: false, message: "Authentication token not found. Please log in again." };
-  }
-  
+  explicitToken?: string
+): Promise<{
+  success: boolean;
+  message: string;
+  imageUrl?: string;
+  requiresLogin?: boolean;
+}> {
   try {
-    // Convert data URI to Blob
-    const fetchResponse = await fetch(image);
-    const blob = await fetchResponse.blob();
+    // 1. Authentication Handling
+    let authToken = explicitToken;
+    if (!authToken) {
+      const cookieStore = await cookies();
+      authToken = cookieStore.get("auth_token")?.value;
+    }
 
+    if (!authToken) {
+      console.error("Authentication failed - No token found");
+      return {
+        success: false,
+        message: "Session expired. Please log in again.",
+        requiresLogin: true,
+      };
+    }
+
+    // 2. Input Validation
+    const image = formData.get("image");
+    const username = formData.get("username");
+
+    if (!image) {
+      return { success: false, message: "No image file provided." };
+    }
+    if (!username || typeof username !== "string") {
+      return { success: false, message: "Username is required." };
+    }
+
+    // 3. Image Processing
+    let blob: Blob;
+    try {
+      if (image instanceof Blob) {
+        blob = image;
+      } else if (typeof image === "string" && image.startsWith("data:image")) {
+        const response = await fetch(image);
+        if (!response.ok) throw new Error("Failed to fetch image from data URL");
+        blob = await response.blob();
+      } else {
+        return { success: false, message: "Unsupported image format." };
+      }
+      // Validate image size (e.g., max 5MB)
+      if (blob.size > 5 * 1024 * 1024) {
+        return { success: false, message: "Image size exceeds 5MB limit." };
+      }
+    } catch (error) {
+      console.error("Image processing error:", error);
+      return { success: false, message: "Error processing the image." };
+    }
+
+    // 4. Prepare FormData for upload
     const uploadFormData = new FormData();
-    uploadFormData.append('image', blob, 'selfie.png');
-    uploadFormData.append('username', username);
+    uploadFormData.append("image", blob, `selfie_${Date.now()}.png`);
+    uploadFormData.append("username", username.trim());
 
-    const headers = new Headers();
-    headers.append('Authorization', `Bearer ${token}`);
-
-    const response = await fetch("https://flashback.inc:9000/api/mobile/uploadUserPortrait", {
-      method: 'POST',
-      headers: headers,
+    // 5. API Request
+    const endpoint = "https://flashback.inc:9000/api/mobile/uploadUserPortrait";
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
       body: uploadFormData,
     });
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error("API error:", result.message);
-      return { success: false, message: result.message || "Failed to upload selfie." };
+    // 6. Handle Response
+    let result: any = {};
+    try {
+      result = await response.json();
+    } catch {
+      // If no JSON response
+      result = {};
     }
 
-    // The API might not return a URL, we will use the captured image for display
-    return { success: true, message: "Selfie uploaded successfully!", imageUrl: image };
-  } catch(error) {
-    console.error("Network or other error:", error);
-    return { success: false, message: "An error occurred during selfie upload." };
+    if (!response.ok) {
+      console.error("Upload failed:", {
+        status: response.status,
+        error: result?.message || "Unknown error",
+      });
+
+      if (response.status === 401) {
+        const cookieStore = await cookies();
+        await cookieStore.delete("auth_token");
+        return {
+          success: false,
+          message: "Session expired. Please log in again.",
+          requiresLogin: true,
+        };
+      }
+
+      return {
+        success: false,
+        message: result?.message || "Upload failed. Please try again.",
+      };
+    }
+
+    if (result?.success === false) {
+      return {
+        success: false,
+        message: result.message || "Upload failed.",
+      };
+    }
+
+    // 7. Success Case
+    return {
+      success: true,
+      message: "Selfie uploaded successfully!",
+      imageUrl: result?.imageUrl || (typeof image === "string" ? image : undefined),
+    };
+
+  } catch (error) {
+    console.error("Unexpected error in uploadSelfie:", error);
+    return {
+      success: false,
+      message: "An unexpected error occurred. Please try again.",
+    };
   }
 }
