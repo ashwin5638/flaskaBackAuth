@@ -1,24 +1,10 @@
 "use server";
 
 import { z } from "zod";
+import { sendOtp as sendOtpFlow } from "@/ai/flows/otp-flow";
+import { verifyOtp as verifyOtpFlow } from "@/ai/flows/verify-otp-flow";
+import { OTPSchema, PhoneSchema } from "@/lib/schemas";
 
-const PhoneSchema = z.object({
-  phoneNumber: z
-    .string()
-    .min(1, "Phone number is required.")
-    .regex(/^\+[1-9]\d{1,14}$/, "Please enter a valid E.164 phone number (e.g., +91XXXXXXXXXX)."),
-});
-
-const OTPSchema = z.object({
-  otp: z
-    .string()
-    .min(6, "OTP must be 6 digits.")
-    .max(6, "OTP must be 6 digits.")
-    .regex(/^\d{6}$/, "OTP must contain only digits."),
-});
-
-
-// --- Mock API Implementations ---
 
 // This function simulates calling an API to send an OTP.
 // In a real application, this would involve an HTTP request to your backend.
@@ -31,21 +17,7 @@ export async function sendOtp(
     return { success: false, message: "Invalid phone number format." };
   }
 
-  const { phoneNumber } = validatedFields.data;
-
-  console.log(`Simulating sending OTP to ${phoneNumber}...`);
-
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Simulate a potential API error for demonstration
-  if (phoneNumber.includes("5555")) {
-    console.error("Simulation: API error for rate-limited number.");
-    return { success: false, message: "This phone number has been rate-limited. Please try again later." };
-  }
-
-  console.log("Simulation: OTP sent successfully.");
-  return { success: true, message: "OTP has been sent to your WhatsApp." };
+  return await sendOtpFlow(validatedFields.data);
 }
 
 // This function simulates verifying the OTP.
@@ -58,22 +30,7 @@ export async function verifyOtp(
     return { success: false, message: "Invalid OTP format." };
   }
 
-  const { otp } = validatedFields.data;
-  console.log(`Simulating verifying OTP: ${otp}...`);
-
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // The "correct" OTP for this simulation is '123456'.
-  if (otp !== "123456") {
-    console.error("Simulation: Invalid OTP entered.");
-    return { success: false, message: "Invalid or expired OTP. Please try again." };
-  }
-
-  console.log("Simulation: OTP verified successfully.");
-  // In a real app, the backend would return a JWT.
-  const mockJwt = "_mock_jwt_token_" + Math.random();
-  return { success: true, message: "OTP verified successfully!", token: mockJwt };
+  return await verifyOtpFlow(validatedFields.data);
 }
 
 

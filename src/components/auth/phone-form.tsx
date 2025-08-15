@@ -24,7 +24,7 @@ export default function PhoneForm({ onSuccess }: PhoneFormProps) {
   const form = useForm<z.infer<typeof PhoneSchema>>({
     resolver: zodResolver(PhoneSchema),
     defaultValues: {
-      phoneNumber: "",
+      phoneNumber: "+91",
     },
   });
 
